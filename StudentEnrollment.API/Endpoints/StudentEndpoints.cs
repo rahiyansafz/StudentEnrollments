@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 using StudentEnrollment.Data.Contracts;
-using StudentEnrollment.Data.Data;
 using StudentEnrollment.Data.Entities;
 using StudentEnrollment.Data.Models.Student;
 
@@ -13,27 +13,29 @@ public static class StudentEndpoints
 {
     public static void MapStudentEndpoints(this IEndpointRouteBuilder routes)
     {
-        var router = routes.MapGroup("/api/students").WithTags(nameof(Student));
+        var route = routes.MapGroup("/api/students").WithTags(nameof(Student));
 
-        router.MapGet("/", async (IStudentRepository repository, DataContext db, IMapper mapper) =>
+        route.MapGet("/", async (IStudentRepository repository, IMapper mapper) =>
         {
             var students = await repository.GetAllAsync();
             return mapper.Map<List<StudentDto>>(students);
         })
+        .AllowAnonymous()
         .WithName("GetAllStudents")
         .WithOpenApi();
 
-        router.MapGet("/{id}", async Task<Results<Ok<StudentDto>, NotFound>> (int id, IStudentRepository repository, DataContext db, IMapper mapper) =>
+        route.MapGet("/{id}", async Task<Results<Ok<StudentDto>, NotFound>> (int id, IStudentRepository repository, IMapper mapper) =>
         {
             return await repository.GetAsync(id)
                 is Student model
                     ? TypedResults.Ok(mapper.Map<StudentDto>(model))
                     : TypedResults.NotFound();
         })
+        .AllowAnonymous()
         .WithName("GetStudentById")
         .WithOpenApi();
 
-        router.MapGet("/detail/{id}", async Task<Results<Ok<StudentDetailsDto>, NotFound>> (int id, IStudentRepository repository, DataContext db, IMapper mapper) =>
+        route.MapGet("/detail/{id}", async Task<Results<Ok<StudentDetailsDto>, NotFound>> (int id, IStudentRepository repository, IMapper mapper) =>
         {
             return await repository.GetStudentDetails(id)
                 is Student model
@@ -43,7 +45,7 @@ public static class StudentEndpoints
         .WithName("GetStudentDetail")
         .WithOpenApi();
 
-        router.MapPut("/{id}", async Task<Results<NotFound, NoContent>> (int id, IStudentRepository repository, StudentDto student, DataContext db, IMapper mapper) =>
+        route.MapPut("/{id}", async Task<Results<NotFound, NoContent>> (int id, IStudentRepository repository, StudentDto student, IMapper mapper) =>
         {
             var foundModel = await repository.GetAsync(id);
 
@@ -51,7 +53,6 @@ public static class StudentEndpoints
                 return TypedResults.NotFound();
 
             mapper.Map(student, foundModel);
-            //db.Update(student);
             await repository.UpdateAsync(foundModel);
 
             return TypedResults.NoContent();
@@ -59,25 +60,17 @@ public static class StudentEndpoints
         .WithName("UpdateStudent")
         .WithOpenApi();
 
-        router.MapPost("/", async (CreateStudentDto student, IStudentRepository repository, DataContext db, IMapper mapper) =>
+        route.MapPost("/", async (CreateStudentDto student, IStudentRepository repository, IMapper mapper) =>
         {
             var model = mapper.Map<Student>(student);
-            db.Students.Add(model);
             await repository.AddAsync(model);
             return TypedResults.Created($"/api/students/{model.Id}", model);
         })
         .WithName("CreateStudent")
         .WithOpenApi();
 
-        router.MapDelete("/{id}", async Task<Results<Ok<Student>, NoContent, NotFound>> (int id, IStudentRepository repository, DataContext db) =>
+        route.MapDelete("/{id}", [Authorize(Roles = "Administrator")] async Task<Results<Ok<Student>, NoContent, NotFound>> (int id, IStudentRepository repository) =>
         {
-            //if (await db.Students.FindAsync(id) is Student student)
-            //{
-            //    db.Students.Remove(student);
-            //    await db.SaveChangesAsync();
-            //    return TypedResults.Ok(student);
-            //}
-
             return await repository.DeleteAsync(id) ? TypedResults.NoContent() : TypedResults.NotFound();
         })
         .WithName("DeleteStudent")

@@ -22,5 +22,7 @@ public class MapperConfig : Profile
 
         CreateMap<Enrollment, EnrollmentDto>().ReverseMap();
         CreateMap<Enrollment, CreateEnrollmentDto>().ReverseMap();
+
+        //CreateMap<Register, SchoolUser>().ReverseMap();
     }
 }
