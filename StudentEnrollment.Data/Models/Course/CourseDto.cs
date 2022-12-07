@@ -1,7 +1,15 @@
-﻿namespace StudentEnrollment.Data.Models.Course;
-public class CourseDto
+﻿using FluentValidation;
+
+namespace StudentEnrollment.Data.Models.Course;
+public class CourseDto : CreateCourseDto
 {
     public int Id { get; set; }
-    public string? Title { get; set; }
-    public int Credits { get; set; }
+}
+
+public class CourseValidator : AbstractValidator<CourseDto>
+{
+    public CourseValidator()
+    {
+        Include(new CreateCourseValidator());
+    }
 }

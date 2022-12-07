@@ -16,6 +16,7 @@ public class RegisterValidator : AbstractValidator<Register>
 
         RuleFor(x => x.FirstName)
             .NotEmpty();
+
         RuleFor(x => x.LastName)
             .NotEmpty();
 

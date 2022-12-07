@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 
+using FluentValidation;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -45,8 +47,13 @@ public static class CourseEndpoints
         .WithName("GetCourseDetail")
         .WithOpenApi();
 
-        route.MapPut("/{id}", async Task<Results<NotFound, NoContent>> (int id, CourseDto course, ICourseRepository repository, IMapper mapper) =>
+        route.MapPut("/{id}", async Task<Results<NotFound, NoContent, BadRequest<IDictionary<string, string[]>>>> (int id, CourseDto course, ICourseRepository repository, IMapper mapper, IValidator<CourseDto> validator) =>
         {
+            var modelState = await validator.ValidateAsync(course);
+
+            if (!modelState.IsValid)
+                return TypedResults.BadRequest(modelState.ToDictionary());
+
             var foundModel = await repository.GetAsync(id);
 
             if (foundModel is null)
@@ -60,8 +67,13 @@ public static class CourseEndpoints
         .WithName("UpdateCourse")
         .WithOpenApi();
 
-        route.MapPost("/", async (CreateCourseDto course, ICourseRepository repository, IMapper mapper) =>
+        route.MapPost("/", async (CreateCourseDto course, ICourseRepository repository, IMapper mapper, IValidator<CreateCourseDto> validator) =>
         {
+            var modelState = await validator.ValidateAsync(course);
+
+            if (!modelState.IsValid)
+                return Results.BadRequest(modelState.ToDictionary());
+
             var model = mapper.Map<Course>(course);
             await repository.AddAsync(model);
             return TypedResults.Created($"/api/courses/{model.Id}", model);

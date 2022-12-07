@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 
+using FluentValidation;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
@@ -35,8 +37,13 @@ public static class EnrollmentEndpoints
         .WithName("GetEnrollmentById")
         .WithOpenApi();
 
-        route.MapPut("/{id}", async Task<Results<NotFound, NoContent>> (int id, EnrollmentDto enrollment, IEnrollmentRepository repository, IMapper mapper) =>
+        route.MapPut("/{id}", async Task<Results<NotFound, NoContent, BadRequest<IDictionary<string, string[]>>>> (int id, EnrollmentDto enrollment, IEnrollmentRepository repository, IMapper mapper, IValidator<EnrollmentDto> validator) =>
         {
+            var modelState = await validator.ValidateAsync(enrollment);
+
+            if (!modelState.IsValid)
+                return TypedResults.BadRequest(modelState.ToDictionary());
+
             var foundModel = await repository.GetAsync(id);
 
             if (foundModel is null)
@@ -50,8 +57,13 @@ public static class EnrollmentEndpoints
         .WithName("UpdateEnrollment")
         .WithOpenApi();
 
-        route.MapPost("/", async (CreateEnrollmentDto enrollment, IEnrollmentRepository repository, IMapper mapper) =>
+        route.MapPost("/", async (CreateEnrollmentDto enrollment, IEnrollmentRepository repository, IMapper mapper, IValidator<CreateEnrollmentDto> validator) =>
         {
+            var modelState = await validator.ValidateAsync(enrollment);
+
+            if (!modelState.IsValid)
+                return Results.BadRequest(modelState.ToDictionary());
+
             var model = mapper.Map<Enrollment>(enrollment);
             await repository.AddAsync(model);
             return TypedResults.Created($"/api/enrollments/{model.Id}", model);

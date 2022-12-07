@@ -2,6 +2,7 @@
 
 using Microsoft.AspNetCore.Http.HttpResults;
 
+using StudentEnrollment.API.Filters;
 using StudentEnrollment.API.Services;
 using StudentEnrollment.Data.Models;
 using StudentEnrollment.Data.Models.Authentication;
@@ -14,13 +15,9 @@ public static class AuthenticationEndpoints
     {
         var route = routes.MapGroup("/api/authenticate").WithTags("Authentication");
 
-        route.MapPost("/login", async Task<Results<Ok<AuthResponse>, UnauthorizedHttpResult, BadRequest>> (Login login, IAuthManager authManager, IValidator<Login> validator) =>
+        route.MapPost("/login", async Task<Results<Ok<AuthResponse>
+            , UnauthorizedHttpResult, BadRequest<IDictionary<string, string[]>>>> (Login login, IAuthManager authManager, IValidator<Login> validator) =>
         {
-            var modelState = await validator.ValidateAsync(login);
-
-            if (!modelState.IsValid)
-                return TypedResults.BadRequest(modelState.ToDictionary());
-
             var response = await authManager.Login(login);
 
             if (response is null)
@@ -28,6 +25,7 @@ public static class AuthenticationEndpoints
 
             return TypedResults.Ok(response);
         })
+        .AddEndpointFilter<ValidatationFilter<Login>>()
         .AllowAnonymous()
         .WithName("Login")
         .WithOpenApi();
@@ -51,6 +49,7 @@ public static class AuthenticationEndpoints
 
             return TypedResults.BadRequest(errors);
         })
+        .AddEndpointFilter<ValidatationFilter<Register>>()
         .AllowAnonymous()
         .WithName("Register")
         .WithOpenApi();

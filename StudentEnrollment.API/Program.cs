@@ -63,7 +63,10 @@ builder.Services.AddAutoMapper(typeof(MapperConfig));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddScoped<IAuthManager, AuthManager>();
+builder.Services.AddScoped<IFileUpload, FileUpload>();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
@@ -74,8 +77,6 @@ builder.Services.AddCors(options =>
                                                   .AllowAnyOrigin()
                                                   .AllowAnyMethod());
 });
-
-builder.Services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 
 var app = builder.Build();
 
