@@ -5,6 +5,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
+using StudentEnrollment.API.Extensions;
 using StudentEnrollment.Data.Contracts;
 using StudentEnrollment.Data.Entities;
 using StudentEnrollment.Data.Models.Enrollment;
@@ -54,6 +55,7 @@ public static class EnrollmentEndpoints
 
             return TypedResults.NoContent();
         })
+        .EnableOpenApiWithAuthentication()
         .WithName("UpdateEnrollment")
         .WithOpenApi();
 
@@ -68,6 +70,7 @@ public static class EnrollmentEndpoints
             await repository.AddAsync(model);
             return TypedResults.Created($"/api/enrollments/{model.Id}", model);
         })
+        .EnableOpenApiWithAuthentication()
         .WithName("CreateEnrollment")
         .WithOpenApi();
 
@@ -75,6 +78,7 @@ public static class EnrollmentEndpoints
         {
             return await repository.DeleteAsync(id) ? TypedResults.NoContent() : TypedResults.NotFound();
         })
+        .EnableOpenApiWithAuthentication()
         .WithName("DeleteEnrollment")
         .WithOpenApi();
     }

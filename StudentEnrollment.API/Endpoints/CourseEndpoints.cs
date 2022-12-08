@@ -5,6 +5,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
+using StudentEnrollment.API.Extensions;
 using StudentEnrollment.Data.Contracts;
 using StudentEnrollment.Data.Entities;
 using StudentEnrollment.Data.Models.Course;
@@ -44,6 +45,7 @@ public static class CourseEndpoints
                     ? TypedResults.Ok(mapper.Map<CourseDetailsDto>(model))
                     : TypedResults.NotFound();
         })
+        .EnableOpenApiWithAuthentication()
         .WithName("GetCourseDetail")
         .WithOpenApi();
 
@@ -64,6 +66,7 @@ public static class CourseEndpoints
 
             return TypedResults.NoContent();
         })
+        .EnableOpenApiWithAuthentication()
         .WithName("UpdateCourse")
         .WithOpenApi();
 
@@ -78,6 +81,7 @@ public static class CourseEndpoints
             await repository.AddAsync(model);
             return TypedResults.Created($"/api/courses/{model.Id}", model);
         })
+        .EnableOpenApiWithAuthentication()
         .WithName("CreateCourse")
         .WithOpenApi();
 
@@ -85,6 +89,7 @@ public static class CourseEndpoints
         {
             return await repository.DeleteAsync(id) ? TypedResults.NoContent() : TypedResults.NotFound();
         })
+        .EnableOpenApiWithAuthentication()
         .WithName("DeleteCourse")
         .WithOpenApi();
     }

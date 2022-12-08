@@ -16,6 +16,8 @@ using StudentEnrollment.Data.Data;
 using StudentEnrollment.Data.Entities;
 using StudentEnrollment.Data.Repositories;
 
+using Swashbuckle.AspNetCore.SwaggerGen;
+
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -76,6 +78,11 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll", policy => policy.AllowAnyHeader()
                                                   .AllowAnyOrigin()
                                                   .AllowAnyMethod());
+});
+
+builder.Services.Configure<SwaggerGeneratorOptions>(options =>
+{
+    options.InferSecuritySchemes = true;
 });
 
 var app = builder.Build();
