@@ -1,10 +1,5 @@
 ﻿using AutoMapper;
 
-using StudentEnrollment.Data.Entities;
-using StudentEnrollment.Data.Models.Course;
-using StudentEnrollment.Data.Models.Enrollment;
-using StudentEnrollment.Data.Models.Student;
-
 namespace StudentEnrollment.API.Configurations;
 
 public class MapperConfig : Profile

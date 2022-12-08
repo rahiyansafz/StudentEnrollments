@@ -1,0 +1,14 @@
+﻿global using StudentEnrollment.API.Configurations;
+global using StudentEnrollment.API.Endpoints;
+global using StudentEnrollment.API.Extensions;
+global using StudentEnrollment.API.Filters;
+global using StudentEnrollment.API.Services;
+global using StudentEnrollment.Data.Contracts;
+global using StudentEnrollment.Data.Data;
+global using StudentEnrollment.Data.Entities;
+global using StudentEnrollment.Data.Models;
+global using StudentEnrollment.Data.Models.Authentication;
+global using StudentEnrollment.Data.Models.Course;
+global using StudentEnrollment.Data.Models.Enrollment;
+global using StudentEnrollment.Data.Models.Student;
+global using StudentEnrollment.Data.Repositories;

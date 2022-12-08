@@ -2,11 +2,6 @@
 
 using Microsoft.AspNetCore.Http.HttpResults;
 
-using StudentEnrollment.API.Filters;
-using StudentEnrollment.API.Services;
-using StudentEnrollment.Data.Models;
-using StudentEnrollment.Data.Models.Authentication;
-
 namespace StudentEnrollment.API.Endpoints;
 
 public static class AuthenticationEndpoints

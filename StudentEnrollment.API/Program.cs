@@ -8,14 +8,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
-using StudentEnrollment.API.Configurations;
-using StudentEnrollment.API.Endpoints;
-using StudentEnrollment.API.Services;
-using StudentEnrollment.Data.Contracts;
-using StudentEnrollment.Data.Data;
-using StudentEnrollment.Data.Entities;
-using StudentEnrollment.Data.Repositories;
-
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);

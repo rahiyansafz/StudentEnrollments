@@ -5,9 +5,6 @@ using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 
-using StudentEnrollment.Data.Entities;
-using StudentEnrollment.Data.Models.Authentication;
-
 namespace StudentEnrollment.API.Services;
 
 public interface IAuthManager

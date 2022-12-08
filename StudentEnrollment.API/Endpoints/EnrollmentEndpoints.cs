@@ -5,11 +5,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 
-using StudentEnrollment.API.Extensions;
-using StudentEnrollment.Data.Contracts;
-using StudentEnrollment.Data.Entities;
-using StudentEnrollment.Data.Models.Enrollment;
-
 namespace StudentEnrollment.API.Endpoints;
 
 public static class EnrollmentEndpoints
