@@ -2,7 +2,7 @@
 
 using Newtonsoft.Json;
 
-using StudentEnrollment.API.Exceptions;
+using StudentEnrollment.Data.Exceptions;
 
 namespace StudentEnrollment.API.Middlewares;
 

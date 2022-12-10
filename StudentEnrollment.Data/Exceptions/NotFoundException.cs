@@ -1,4 +1,4 @@
-﻿namespace StudentEnrollment.API.Exceptions;
+﻿namespace StudentEnrollment.Data.Exceptions;
 
 public class NotFoundException : ApplicationException
 {

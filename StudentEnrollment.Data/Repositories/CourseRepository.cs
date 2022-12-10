@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+
+using Microsoft.EntityFrameworkCore;
 
 using StudentEnrollment.Data.Contracts;
 using StudentEnrollment.Data.Data;
@@ -7,7 +9,7 @@ using StudentEnrollment.Data.Entities;
 namespace StudentEnrollment.Data.Repositories;
 public class CourseRepository : GenericRepository<Course>, ICourseRepository
 {
-    public CourseRepository(DataContext db) : base(db)
+    public CourseRepository(DataContext db, IMapper mapper) : base(db, mapper)
     {
     }
 

@@ -1,4 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+
+using Microsoft.EntityFrameworkCore;
+
 using StudentEnrollment.Data.Contracts;
 using StudentEnrollment.Data.Data;
 using StudentEnrollment.Data.Entities;
@@ -6,7 +9,7 @@ using StudentEnrollment.Data.Entities;
 namespace StudentEnrollment.Data.Repositories;
 public class StudentRepository : GenericRepository<Student>, IStudentRepository
 {
-    public StudentRepository(DataContext db) : base(db)
+    public StudentRepository(DataContext db, IMapper mapper) : base(db, mapper)
     {
     }
 
