@@ -11,6 +11,8 @@ public interface IAuthManager
 {
     Task<AuthResponse> Login(Login login);
     Task<IEnumerable<IdentityError>> Register(Register register);
+    Task<string> CreateRefreshToken();
+    Task<AuthResponse> VerifyRefreshToken(AuthResponse request);
 }
 
 public class AuthManager : IAuthManager
@@ -18,10 +20,21 @@ public class AuthManager : IAuthManager
     private readonly UserManager<SchoolUser> _userManager;
     private readonly IConfiguration _configuration;
     private SchoolUser? _user;
+
+    private const string _loginProvider = "StudentEnrollmentsAPI";
+    private const string _refreshToken = "RefreshToken";
     public AuthManager(UserManager<SchoolUser> userManager, IConfiguration configuration)
     {
         _userManager = userManager;
         _configuration = configuration;
+    }
+
+    public async Task<string> CreateRefreshToken()
+    {
+        await _userManager.RemoveAuthenticationTokenAsync(_user, _loginProvider, _refreshToken);
+        var newRefreshToken = await _userManager.GenerateUserTokenAsync(_user, _loginProvider, _refreshToken);
+        var result = await _userManager.SetAuthenticationTokenAsync(_user, _loginProvider, _refreshToken, newRefreshToken);
+        return newRefreshToken;
     }
 
     public async Task<AuthResponse> Login(Login login)
@@ -42,7 +55,8 @@ public class AuthManager : IAuthManager
         return new AuthResponse
         {
             Token = token,
-            UserId = _user.Id
+            UserId = _user.Id,
+            RefreshToken = await CreateRefreshToken()
         };
     }
 
@@ -63,6 +77,36 @@ public class AuthManager : IAuthManager
             await _userManager.AddToRoleAsync(_user, "User");
 
         return result.Errors;
+    }
+
+    public async Task<AuthResponse> VerifyRefreshToken(AuthResponse request)
+    {
+        var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+
+        var tokenContent = jwtSecurityTokenHandler.ReadJwtToken(request.Token);
+
+        var username = tokenContent.Claims.ToList().FirstOrDefault(q => q.Type == JwtRegisteredClaimNames.Email)?.Value;
+
+        _user = await _userManager.FindByNameAsync(username);
+
+        if (_user is null || _user.Id != request.UserId)
+            return default!;
+
+        var isValidRefreshToken = await _userManager.VerifyUserTokenAsync(_user, _loginProvider, _refreshToken, request.RefreshToken);
+
+        if (isValidRefreshToken)
+        {
+            var token = await GenerateTokenAsync();
+            return new AuthResponse
+            {
+                Token = token,
+                UserId = _user.Id,
+                RefreshToken = await CreateRefreshToken()
+            };
+        }
+
+        await _userManager.UpdateSecurityStampAsync(_user);
+        return default!;
     }
 
     private async Task<string> GenerateTokenAsync()

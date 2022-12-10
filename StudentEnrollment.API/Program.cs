@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
+using StudentEnrollment.API.Middlewares;
+
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,7 +23,9 @@ builder.Services.AddDbContext<DataContext>(options =>
 
 builder.Services.AddIdentityCore<SchoolUser>()
     .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<DataContext>();
+    .AddTokenProvider<DataProtectorTokenProvider<SchoolUser>>("StudentEnrollmentsAPI")
+    .AddEntityFrameworkStores<DataContext>()
+    .AddDefaultTokenProviders(); ;
 
 builder.Services.AddAuthentication(options =>
 {
@@ -38,7 +42,7 @@ builder.Services.AddAuthentication(options =>
             ValidAudience = builder.Configuration["JwtSettings:Audience"],
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder?.Configuration["JwtSettings:Key"]))
         };
     });
 
@@ -77,6 +81,12 @@ builder.Services.Configure<SwaggerGeneratorOptions>(options =>
     options.InferSecuritySchemes = true;
 });
 
+builder.Services.AddResponseCaching(options =>
+{
+    options.MaximumBodySize = 1024;
+    options.UseCaseSensitivePaths = true;
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -86,13 +96,31 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseAuthentication();
-
-app.UseAuthorization();
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
+
+app.UseResponseCaching();
+
+app.Use(async (context, next) =>
+{
+    context.Response.GetTypedHeaders().CacheControl =
+        new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
+        {
+            Public = true,
+            MaxAge = TimeSpan.FromSeconds(30)
+        };
+    context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
+        new string[] { "Accept-Encoding" };
+
+    await next();
+});
+
+app.UseAuthentication();
+
+app.UseAuthorization();
 
 app.MapAuthenticationEndpoints();
 

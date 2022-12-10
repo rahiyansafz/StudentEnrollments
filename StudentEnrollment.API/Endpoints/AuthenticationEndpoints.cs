@@ -48,5 +48,18 @@ public static class AuthenticationEndpoints
         .AllowAnonymous()
         .WithName("Register")
         .WithOpenApi();
+
+        route.MapPost("/refreshtoken", async Task<Results<Ok<AuthResponse>, UnauthorizedHttpResult>> (AuthResponse request, IAuthManager authManager) =>
+        {
+            var response = await authManager.VerifyRefreshToken(request);
+
+            if (response is null)
+                return TypedResults.Unauthorized();
+
+            return TypedResults.Ok(response);
+        })
+        .AllowAnonymous()
+        .WithName("RefreshToken")
+        .WithOpenApi();
     }
 }
