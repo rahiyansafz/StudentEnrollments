@@ -81,10 +81,12 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
             .ToListAsync();
     }
 
-    public async Task<T>? GetAsync(int? id)
+    public async Task<T> GetAsync(int? id)
     {
-        var result = await _db.Set<T>().FindAsync(id);
-        return result;
+        if (id is null)
+            return null;
+
+        return await _db.Set<T>().FindAsync(id);
     }
 
     public async Task<TResult> GetAsync<TResult>(int? id)
