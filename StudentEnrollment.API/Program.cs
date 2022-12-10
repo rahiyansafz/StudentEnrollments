@@ -25,7 +25,7 @@ builder.Services.AddIdentityCore<SchoolUser>()
     .AddRoles<IdentityRole>()
     .AddTokenProvider<DataProtectorTokenProvider<SchoolUser>>("StudentEnrollmentsAPI")
     .AddEntityFrameworkStores<DataContext>()
-    .AddDefaultTokenProviders(); ;
+    .AddDefaultTokenProviders();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -46,6 +46,8 @@ builder.Services.AddAuthentication(options =>
         };
     });
 
+builder.Services.AddAutoMapper(typeof(MapperConfig));
+
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
@@ -53,8 +55,6 @@ builder.Services.AddAuthorization(options =>
     .RequireAuthenticatedUser()
     .Build();
 });
-
-builder.Services.AddAutoMapper(typeof(MapperConfig));
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -96,11 +96,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseMiddleware<ExceptionMiddleware>();
-
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseResponseCaching();
 
