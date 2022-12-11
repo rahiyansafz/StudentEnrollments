@@ -27,6 +27,30 @@ builder.Services.AddIdentityCore<SchoolUser>()
     .AddEntityFrameworkStores<DataContext>()
     .AddDefaultTokenProviders();
 
+// Add services to the container.
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy => policy.AllowAnyHeader()
+                                                  .AllowAnyOrigin()
+                                                  .AllowAnyMethod());
+});
+
+builder.Services.AddAutoMapper(typeof(MapperConfig));
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+
+builder.Services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
+builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
+builder.Services.AddScoped<IFileUpload, FileUpload>();
+builder.Services.AddScoped<IAuthManager, AuthManager>();
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -34,19 +58,20 @@ builder.Services.AddAuthentication(options =>
 })
     .AddJwtBearer(options =>
     {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
         options.TokenValidationParameters = new TokenValidationParameters
         {
+            ValidateIssuerSigningKey = true,
             ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
             ValidateAudience = true,
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder?.Configuration["JwtSettings:Key"]))
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"]))
         };
     });
-
-builder.Services.AddAutoMapper(typeof(MapperConfig));
 
 builder.Services.AddAuthorization(options =>
 {
@@ -56,35 +81,16 @@ builder.Services.AddAuthorization(options =>
     .Build();
 });
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddScoped<IAuthManager, AuthManager>();
-builder.Services.AddScoped<IFileUpload, FileUpload>();
-builder.Services.AddScoped<ICourseRepository, CourseRepository>();
-builder.Services.AddScoped<IStudentRepository, StudentRepository>();
-builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy => policy.AllowAnyHeader()
-                                                  .AllowAnyOrigin()
-                                                  .AllowAnyMethod());
-});
-
-builder.Services.Configure<SwaggerGeneratorOptions>(options =>
-{
-    options.InferSecuritySchemes = true;
-});
-
 builder.Services.AddResponseCaching(options =>
 {
     options.MaximumBodySize = 1024;
     options.UseCaseSensitivePaths = true;
+});
+
+
+builder.Services.Configure<SwaggerGeneratorOptions>(options =>
+{
+    options.InferSecuritySchemes = true;
 });
 
 var app = builder.Build();
@@ -96,11 +102,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseMiddleware<ExceptionMiddleware>();
+
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
-
-app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseResponseCaching();
 
