@@ -11,7 +11,9 @@ public static class StudentEndpoints
 {
     public static void MapStudentEndpoints(this IEndpointRouteBuilder routes)
     {
-        var route = routes.MapGroup("/api/students").WithTags(nameof(Student));
+        var route = routes.MapGroup("/api/students")
+                                            .EnableOpenApiWithAuthentication()
+                                            .WithTags(nameof(Student));
 
         route.MapGet("/", async (IStudentRepository repository, IMapper mapper) =>
         {
@@ -40,7 +42,6 @@ public static class StudentEndpoints
                     ? TypedResults.Ok(mapper.Map<StudentDetailsDto>(model))
                     : TypedResults.NotFound();
         })
-        .EnableOpenApiWithAuthentication()
         .WithName("GetStudentDetail")
         .WithOpenApi();
 
@@ -64,7 +65,6 @@ public static class StudentEndpoints
             await repository.UpdateAsync(foundModel);
             return TypedResults.NoContent();
         })
-        .EnableOpenApiWithAuthentication()
         .WithName("UpdateStudent")
         .WithOpenApi();
 
@@ -80,7 +80,6 @@ public static class StudentEndpoints
             await repository.AddAsync(model);
             return TypedResults.Created($"/api/students/{model.Id}", model);
         })
-        .EnableOpenApiWithAuthentication()
         .AddEndpointFilter<ValidatationFilter<CreateStudentDto>>()
         .AddEndpointFilter<LoggingFilter>()
         .WithName("CreateStudent")
@@ -90,7 +89,6 @@ public static class StudentEndpoints
             {
                 return await repository.DeleteAsync(id) ? TypedResults.NoContent() : TypedResults.NotFound();
             })
-            .EnableOpenApiWithAuthentication()
             .WithName("DeleteStudent")
             .WithOpenApi();
     }

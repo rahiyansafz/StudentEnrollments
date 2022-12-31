@@ -11,7 +11,9 @@ public static class EnrollmentEndpoints
 {
     public static void MapEnrollmentEndpoints(this IEndpointRouteBuilder routes)
     {
-        var route = routes.MapGroup("/api/enrollments").WithTags(nameof(Enrollment));
+        var route = routes.MapGroup("/api/enrollments")
+                                            .EnableOpenApiWithAuthentication()
+                                            .WithTags(nameof(Enrollment));
 
         route.MapGet("/", async (IEnrollmentRepository repository, IMapper mapper) =>
         {
@@ -50,7 +52,6 @@ public static class EnrollmentEndpoints
 
             return TypedResults.NoContent();
         })
-        .EnableOpenApiWithAuthentication()
         .WithName("UpdateEnrollment")
         .WithOpenApi();
 
@@ -65,7 +66,6 @@ public static class EnrollmentEndpoints
             await repository.AddAsync(model);
             return TypedResults.Created($"/api/enrollments/{model.Id}", model);
         })
-        .EnableOpenApiWithAuthentication()
         .WithName("CreateEnrollment")
         .WithOpenApi();
 
@@ -73,7 +73,6 @@ public static class EnrollmentEndpoints
         {
             return await repository.DeleteAsync(id) ? TypedResults.NoContent() : TypedResults.NotFound();
         })
-        .EnableOpenApiWithAuthentication()
         .WithName("DeleteEnrollment")
         .WithOpenApi();
     }

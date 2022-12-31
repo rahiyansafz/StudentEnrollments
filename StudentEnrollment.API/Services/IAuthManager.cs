@@ -111,7 +111,7 @@ public class AuthManager : IAuthManager
 
     private async Task<string> GenerateTokenAsync()
     {
-        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]!));
+        var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Key"]));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
         var roles = await _userManager.GetRolesAsync(_user);

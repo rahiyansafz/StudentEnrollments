@@ -11,7 +11,9 @@ public static class CourseEndpoints
 {
     public static void MapCourseEndpoints(this IEndpointRouteBuilder routes)
     {
-        var route = routes.MapGroup("/api/courses").WithTags(nameof(Course));
+        var route = routes.MapGroup("/api/courses")
+                                        .EnableOpenApiWithAuthentication()
+                                        .WithTags(nameof(Course));
 
         route.MapGet("/", async (ICourseRepository repository, IMapper mapper) =>
         {
@@ -40,7 +42,7 @@ public static class CourseEndpoints
                     ? TypedResults.Ok(mapper.Map<CourseDetailsDto>(model))
                     : TypedResults.NotFound();
         })
-        .EnableOpenApiWithAuthentication()
+
         .WithName("GetCourseDetail")
         .WithOpenApi();
 
@@ -61,7 +63,6 @@ public static class CourseEndpoints
 
             return TypedResults.NoContent();
         })
-        .EnableOpenApiWithAuthentication()
         .WithName("UpdateCourse")
         .WithOpenApi();
 
@@ -76,7 +77,6 @@ public static class CourseEndpoints
             await repository.AddAsync(model);
             return TypedResults.Created($"/api/courses/{model.Id}", model);
         })
-        .EnableOpenApiWithAuthentication()
         .WithName("CreateCourse")
         .WithOpenApi();
 
@@ -84,7 +84,6 @@ public static class CourseEndpoints
         {
             return await repository.DeleteAsync(id) ? TypedResults.NoContent() : TypedResults.NotFound();
         })
-        .EnableOpenApiWithAuthentication()
         .WithName("DeleteCourse")
         .WithOpenApi();
     }
